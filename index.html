@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sidharth SS • Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Google Fonts and Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="https://fonts.googleapis.com/css?family=Bree%20Serif&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bree%20Serif&display=swap">
+  </noscript>
+  <link rel="preload" href="https://fonts.googleapis.com/css?family=Source%20Sans%20Pro:400,700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source%20Sans%20Pro:400,700&display=swap">
+  </noscript>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+        integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- Inline CSS -->
+  <style>
+    /* Global reset and basic styles */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background-color: #fcfcf9; color: #333; font-family: "Source Sans Pro", Arial, sans-serif; line-height: 1.6; }
+    a { color: #2b9e5e; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+    /* Header */
+    header { text-align: center; padding: 20px 0; }
+    header .site-title { font-family: "Bree Serif", Georgia, serif; font-size: 2.5rem; color: #333; }
+
+    /* Navigation */
+    nav ul { list-style: none; display: flex; justify-content: center; gap: 1rem; margin: 1rem 0 2rem; }
+    nav a { font-weight: bold; }
+
+    /* Post preview styles */
+    .post-preview { margin-bottom: 2rem; border-bottom: 1px solid #ddd; padding-bottom: 1rem; }
+    .post-preview h2 { font-family: "Bree Serif", Georgia, serif; font-size: 1.6rem; margin-bottom: 0.5rem; }
+    .post-preview p { margin-bottom: 0.5rem; }
+    
+    /* Footer */
+    footer { text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #ddd; font-size: 0.9rem; color: #777; }
+    .social-icons { list-style: none; display: flex; justify-content: center; gap: 1rem; margin-bottom: 1rem; }
+    .social-icons li a { color: #333; font-size: 1.2rem; }
+    .social-icons li a:hover { color: #2b9e5e; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <a href="index.html" class="site-title">Sidharth SS</a>
+  </header>
+
+  <!-- NAVIGATION -->
+  <nav>
+    <ul>
+      <li><a href="about.html">About</a></li>
+      <li><a href="publications.html">Publications</a></li>
+      <!-- Blog link points to index.html -->
+      <li><a href="index.html">Blog</a></li>
+    </ul>
+  </nav>
+
+  <!-- MAIN CONTENT: Previews will be injected here -->
+  <div class="container">
+    <main id="postPreviews">
+      <p>Loading posts…</p>
+    </main>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <ul class="social-icons">
+      <li><a href="mailto:sidharth.iiserm@gmail.com" title="Email"><i class="fas fa-envelope"></i></a></li>
+      <li><a href="#" title="GitHub"><i class="fab fa-github"></i></a></li>
+      <li><a href="#" title="LinkedIn"><i class="fab fa-linkedin"></i></a></li>
+      <li><a href="#" title="Twitter"><i class="fab fa-twitter"></i></a></li>
+    </ul>
+    © 2025 by Sidharth. <a href="#">Privacy policy</a>.
+  </footer>
+
+  <!-- Inline posts JSON data -->
+  <script id="posts-data" type="application/json">
+  [
+    {
+      "filename": "posts/post_1.html",
+      "title": "Understanding Graph Neural Networks (GNNs) from Scratch",
+      "date": "2021-09-01",
+      "snippet": "Graph Neural Networks (GNNs) have emerged as a powerful tool for learning from graph-structured data. Unlike images or text, graphs capture complex relationships between entities—be it social networks, molecular structures, or recommendation systems...."
+    },
+    {
+      "filename": "posts/post_2.html",
+      "title": "My first post (with an image)",
+      "date": "2021-08-31",
+      "snippet": "Sometimes, blog posts will also contain an image, and here is an example to test the stylesheets for this."
+    },
+    {
+      "filename": "posts/post_3.html",
+      "title": "A New Adventure in Barkology",
+      "date": "2021-10-01",
+      "snippet": "This new post explores an innovative approach to empirical barkology that you definitely don’t want to miss!"
+    }
+  ]
+  </script>
+
+  <!-- JavaScript to build the previews -->
+  <script>
+    // Instead of fetching posts.json, get it from the inline script tag
+    try {
+      const postsDataEl = document.getElementById('posts-data');
+      const posts = JSON.parse(postsDataEl.textContent);
+      const container = document.getElementById('postPreviews');
+      container.innerHTML = ''; // Clear loading message
+      // Sort posts by date descending:
+      posts.sort((a,b) => new Date(b.date) - new Date(a.date));
+      posts.forEach(post => {
+        const preview = document.createElement('div');
+        preview.className = 'post-preview';
+        preview.innerHTML = `
+          <h2><a href="${post.filename}">${post.title}</a></h2>
+          <p><em>Published on ${post.date}</em></p>
+          <p>${post.snippet} <a href="${post.filename}">Read more</a></p>
+        `;
+        container.appendChild(preview);
+      });
+    } catch (err) {
+      console.error('Error loading posts:', err);
+      document.getElementById('postPreviews').innerHTML = '<p>Error loading posts.</p>';
+    }
+  </script>
+</body>
+</html>

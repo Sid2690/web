@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Understanding Graph Neural Networks (GNNs) from Scratch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Google Fonts and Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="https://fonts.googleapis.com/css?family=Bree%20Serif&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bree%20Serif&display=swap">
+  </noscript>
+  <link rel="preload" href="https://fonts.googleapis.com/css?family=Source%20Sans%20Pro:400,700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source%20Sans%20Pro:400,700&display=swap">
+  </noscript>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+        integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css"
+        integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn"
+        crossorigin="anonymous">
+
+  <!-- Inline CSS for Blog Post -->
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #fcfcf9;
+      color: #333;
+      font-family: "Source Sans Pro", Arial, sans-serif;
+      line-height: 1.7;
+      padding: 20px;
+    }
+    a { color: #2b9e5e; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header { text-align: center; padding: 20px 0; }
+    header .site-title {
+      font-family: "Bree Serif", Georgia, serif;
+      font-size: 2.5rem;
+      color: #333;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1rem 0 2rem;
+    }
+    nav a { font-weight: bold; }
+    article h1 {
+      font-family: "Bree Serif", Georgia, serif;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    article time {
+      display: block;
+      margin-bottom: 1rem;
+      color: #777;
+    }
+    article p {
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+    article h2 {
+      font-size: 1.5rem;
+      margin: 1.5rem 0 0.5rem;
+    }
+    article h3 {
+      font-size: 1.3rem;
+      margin: 1rem 0 0.5rem;
+    }
+    ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    figure {
+      margin: 1rem 0;
+      text-align: center;
+    }
+    figure img {
+      max-width: 100%;
+      border: 1px solid #ddd;
+    }
+    figcaption {
+      font-size: 0.85rem;
+      color: #555;
+      margin-top: 0.5rem;
+    }
+    /* Next/Previous Navigation */
+    .nav-links {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+    }
+    .nav-links a {
+      font-weight: bold;
+    }
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid #ddd;
+      font-size: 0.9rem;
+      color: #777;
+    }
+    .social-icons {
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .social-icons li a {
+      color: #333;
+      font-size: 1.2rem;
+    }
+    .social-icons li a:hover {
+      color: #2b9e5e;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <a href="../index.html" class="site-title">Sidharth SS</a>
+  </header>
+
+  <!-- NAVIGATION -->
+  <nav>
+    <ul>
+      <li><a href="../about.html">About</a></li>
+      <li><a href="../publications.html">Publications</a></li>
+      <li><a href="../index.html">Blog</a></li>
+    </ul>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <div class="container">
+    <article>
+      <h1>Understanding Graph Neural Networks (GNNs) from Scratch</h1>
+      <time datetime="2021-10-05">Published on October 5, 2021</time>
+      
+      <p>
+        Graph Neural Networks (GNNs) have emerged as a powerful tool for learning from graph-structured data. Unlike images or text, graphs capture complex relationships between entities—be it social networks, molecular structures, or recommendation systems.
+      </p>
+      
+      <h2>Why Graphs?</h2>
+      <p>
+        Graphs are a natural way to represent relationships. For example:
+      </p>
+      <ul>
+        <li><strong>Social Networks:</strong> Users are nodes and friendships are edges.</li>
+        <li><strong>Molecular Structures:</strong> Atoms are nodes and bonds are edges.</li>
+        <li><strong>Knowledge Graphs:</strong> Concepts are linked by various relationships.</li>
+        <li><strong>Recommendation Systems:</strong> Users and products connected by interactions.</li>
+      </ul>
+      <p>
+        These examples highlight why graphs are so versatile. Unlike grids or sequences, graphs have no fixed structure, which presents both opportunities and challenges for learning algorithms.
+      </p>
+      
+      <h2>Extracting Information from Graphs</h2>
+      <p>
+        Traditional neural networks like Convolutional Neural Networks (CNNs) work well for grid-like data (e.g., images) because of the fixed structure of pixels. However, graphs have:
+      </p>
+      <ul>
+        <li>No fixed number of neighbors per node.</li>
+        <li>No inherent ordering among nodes.</li>
+      </ul>
+      <p>
+        To process graphs, we need a mechanism that can aggregate information from a node's neighbors regardless of the order or number of them. This is where <strong>message passing</strong> comes in.
+      </p>
+      
+       
+      <!-- New Section: Mathematical Formulation -->
+      <h2>Mathematical Formulation of Graph Neural Networks</h2>
+      
+      <h3>Introduction</h3>
+      <p>
+        Graph Neural Networks (GNNs) have emerged as a powerful class of models for learning on graph-structured data. A graph is defined as 
+        \[
+          G = (V, E),
+        \]
+        where \(V\) is a set of nodes and \(E\) is a set of edges encoding relationships. This detailed framework emphasizes the message passing paradigm.
+      </p>
+      
+      <h3>Graph Representations</h3>
+      <p>
+        A graph \(G\) is often represented by several components:
+      </p>
+      <ul>
+        <li><strong>Nodes:</strong> Each node \(i \in V\) is associated with a feature vector \(\bm{x}_i \in \mathbb{R}^d\), where \(d\) is the number of features.</li>
+        <li><strong>Edges:</strong> An edge \(e_{ij} \in E\) connects nodes \(i\) and \(j\). Edges can also carry features (e.g., bond types in molecules).</li>
+        <li><strong>Adjacency Matrix:</strong> The connectivity of the graph is captured by the matrix 
+          \[
+            A \in \mathbb{R}^{N \times N}, \quad A_{ij} = \begin{cases} 1, & \text{if there is an edge between } i \text{ and } j, \\ 0, & \text{otherwise.} \end{cases}
+          \]
+          To include a node’s own features in the update, self-loops are typically added:
+          \[
+            \tilde{A} = A + I_N,
+          \]
+          where \(I_N\) is the \(N \times N\) identity matrix.
+        </li>
+      </ul>
+      
+      <h3>The Message Passing Paradigm</h3>
+      <p>
+        The core of GNNs is the message passing mechanism, which updates node representations by exchanging information with their neighbors. For each node \(i\), the update is broken into three main steps:
+      </p>
+      
+      <h4>Message Function</h4>
+      <p>
+        Each node \(j \in \mathcal{N}(i)\) (where \(\mathcal{N}(i)\) denotes the neighborhood of node \(i\)) sends a message to node \(i\). The message is defined as:
+        \[
+          m_{ij} = F(\bm{x}_j),
+        \]
+        where \(F\) is a learnable function. A common choice is an affine transformation:
+        \[
+          m_{ij} = W \bm{x}_j + b,
+        \]
+        with weight matrix \(W \in \mathbb{R}^{d' \times d}\) and bias \(b \in \mathbb{R}^{d'}\).
+      </p>
+      
+      <h4>Aggregation Function</h4>
+      <p>
+        The messages \(\{ m_{ij} : j \in \mathcal{N}(i) \}\) are aggregated using a permutation-invariant function \(G\):
+        \[
+          a_i = G\Big( \{ m_{ij} : j \in \mathcal{N}(i) \} \Big).
+        \]
+        A common aggregation is summation:
+        \[
+          a_i = \sum_{j \in \mathcal{N}(i)} m_{ij}.
+        \]
+      </p>
+      
+      <h4>Update Function</h4>
+      <p>
+        Finally, the node’s feature vector is updated by combining its current state with the aggregated message:
+        \[
+          \bm{x}_i' = U(\bm{x}_i, a_i).
+        \]
+        A typical formulation applies an activation function \(\sigma(\cdot)\) after combining the contributions:
+        \[
+          \bm{x}_i' = \sigma\Big( H(\bm{x}_i) + K(a_i) \Big),
+        \]
+        or in a streamlined version:
+        \[
+          \bm{h}_i' = \sigma\Big( W_{\text{self}} \bm{h}_i + \sum_{j \in \mathcal{N}(i)} W_{\text{neigh}} \bm{h}_j \Big),
+        \]
+        where \(W_{\text{self}}\) and \(W_{\text{neigh}}\) are learnable parameters.
+      </p>
+      
+      <h3>Vectorized Formulation</h3>
+      <p>
+        For efficient implementation, the node features are stacked into a matrix:
+        \[
+          X = \begin{bmatrix}
+          \bm{x}_1^T \\
+          \bm{x}_2^T \\
+          \vdots \\
+          \bm{x}_N^T
+          \end{bmatrix} \in \mathbb{R}^{N \times d}.
+        \]
+        The affine transformation for all nodes is then written as:
+        \[
+          XW \quad \text{with} \quad W \in \mathbb{R}^{d \times d'}.
+        \]
+        Incorporating the augmented adjacency matrix \(\tilde{A}\), the message passing step for the entire graph becomes:
+        \[
+          X' = \sigma\Big( \tilde{A} X W \Big).
+        \]
+      </p>
+      <p>
+        A popular variant introduced by Kipf and Welling in their Graph Convolutional Network (GCN) includes a normalization step. Define the degree matrix \(\tilde{D}\) for \(\tilde{A}\) as:
+        \[
+          \tilde{D}_{ii} = \sum_{j} \tilde{A}_{ij}.
+        \]
+        Then, the layer-wise propagation rule is given by:
+        \[
+          X' = \sigma\Big( \tilde{D}^{-\frac{1}{2}} \tilde{A} \tilde{D}^{-\frac{1}{2}} X W \Big).
+        \]
+      </p>
+      
+      <h3>GNN Applications</h3>
+      <h4>Graph-Level Representation</h4>
+      <p>
+        To obtain a compact representation of the entire graph (useful for graph classification), a pooling function is applied over all node embeddings:
+        \[
+          h_G = \text{Pool}(X') = \text{Aggregate}\{ \bm{x}'_1, \bm{x}'_2, \dots, \bm{x}'_N \}.
+        \]
+      </p>
+      
+      <h4>Node Classification</h4>
+      <p>
+        For tasks such as node classification, each updated node embedding \(\bm{x}_i'\) is passed through a classifier:
+        \[
+          \hat{y}_i = \text{softmax}\Big( f(\bm{x}_i') \Big),
+        \]
+        where \(f\) is typically a linear layer mapping the node embedding to a \(K\)-dimensional output corresponding to \(K\) classes.
+      </p>
+      
+      <h4>Link Prediction</h4>
+      <p>
+        In link prediction tasks, the goal is to determine whether an edge should exist between nodes \(i\) and \(j\). This can be achieved by combining their embeddings:
+        \[
+          p_{ij} = \sigma\Big( g( \bm{x}'_i \, \| \, \bm{x}'_j ) \Big),
+        \]
+        where \(\|\) denotes concatenation, \(g\) is a learnable function (often a multi-layer perceptron), and \(\sigma\) is typically a sigmoid function that produces a probability.
+      </p>
+      
+      <h3>Conclusion</h3>
+      <p>
+        This detailed exposition has presented a rigorous mathematical formulation of Graph Neural Networks. Beginning with the basic graph representation and progressing through the message passing paradigm and vectorized formulation, these principles underpin many modern applications in social network analysis, bioinformatics, recommendation systems, and beyond.
+      </p>
+      
+      <!-- End of New Section -->
+
+      <h2>Feeding Graphs into Neural Networks</h2>
+      <p>
+        One might wonder: why not feed the graph directly into a traditional neural network? The challenges include:
+      </p>
+      <ul>
+        <li><strong>Irregular Structure:</strong> Graphs vary in size, making it hard to use fixed-size inputs.</li>
+        <li><strong>Lack of Canonical Ordering:</strong> Nodes have no fixed order, so any ordering is arbitrary.</li>
+      </ul>
+      <p>
+        GNNs overcome these challenges by focusing on local neighborhoods and using permutation-invariant aggregation functions.
+      </p>
+      
+      <h2>Message Passing in Action</h2>
+      <p>
+        In practice, a GNN layer updates node representations as follows:
+      </p>
+      <p style="text-align:center;">
+        \[
+          h_i^{(k)} = \sigma \left( \sum_{j \in \mathcal{N}(i)} W^{(k)} h_j^{(k-1)} + b^{(k)} \right)
+        \]
+      </p>
+      <p>
+        Here, \( h_i^{(k)} \) is the node representation at layer \( k \), \( \mathcal{N}(i) \) denotes the neighbors of node \( i \), and \( \sigma \) is a non-linear activation function.
+      </p>
+      
+      <h2>Conclusion</h2>
+      <p>
+        Graph Neural Networks represent a significant step forward in processing graph-structured data. By leveraging message passing, GNNs capture complex relational information that traditional neural networks might miss. The mathematical foundations detailed above provide the backbone for various applications and further innovations in graph deep learning.
+      </p>
+    </article>
+
+    <!-- Next/Previous Navigation: This will be populated by JavaScript -->
+    <div class="nav-links" id="navLinks">
+      <!-- Navigation links will be inserted here -->
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <ul class="social-icons">
+      <li><a href="mailto:sidharth.iiserm@gmail.com" title="Email"><i class="fas fa-envelope"></i></a></li>
+      <li><a href="#" title="GitHub"><i class="fab fa-github"></i></a></li>
+      <li><a href="#" title="LinkedIn"><i class="fab fa-linkedin"></i></a></li>
+      <li><a href="#" title="Twitter"><i class="fab fa-twitter"></i></a></li>
+    </ul>
+    © 2025 by Sidharth. <a href="#">Privacy policy</a>.
+  </footer>
+
+  <!-- Inline posts JSON data for navigation (update this array as needed) -->
+  <script id="posts-data" type="application/json">
+  [
+    {
+      "filename": "posts/post_1.html",
+      "title": "Understanding Graph Neural Networks (GNNs) from Scratch",
+      "date": "2021-10-05",
+      "snippet": "Graphs are powerful data structures that capture complex relationships. In this post, we explore GNNs from first principles..."
+    },
+    {
+      "filename": "posts/post_2.html",
+      "title": "My first post (with an image)",
+      "date": "2021-08-31",
+      "snippet": "Sometimes, blog posts will also contain an image..."
+    },
+    {
+      "filename": "posts/post_3.html",
+      "title": "A New Adventure in Barkology",
+      "date": "2021-10-01",
+      "snippet": "This new post explores an innovative approach to empirical barkology..."
+    }
+  ]
+  </script>
+
+  <!-- JavaScript for Next/Previous Navigation -->
+  <script>
+    try {
+      const posts = JSON.parse(document.getElementById('posts-data').textContent);
+      posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+      const currentPath = window.location.pathname.split('/').pop();
+      const currentIndex = posts.findIndex(post => post.filename.endsWith(currentPath));
+      const navLinks = document.getElementById('navLinks');
+      if (currentIndex !== -1) {
+        // Previous link: newer post (if exists)
+        if (currentIndex < posts.length - 1) {
+          const prevLink = document.createElement('a');
+          prevLink.href = '../' + posts[currentIndex + 1].filename;
+          prevLink.textContent = '← Previous';
+          navLinks.appendChild(prevLink);
+        } else {
+          navLinks.innerHTML += '<span></span>';
+        }
+        // Next link: older post (if exists)
+        if (currentIndex > 0) {
+          const nextLink = document.createElement('a');
+          nextLink.href = '../' + posts[currentIndex - 1].filename;
+          nextLink.textContent = 'Next →';
+          navLinks.appendChild(nextLink);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading posts for navigation:', err);
+    }
+  </script>
+
+  <!-- KaTeX auto-render scripts -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js"
+          integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8"
+          crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js"
+          integrity="sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl"
+          crossorigin="anonymous"
+          onload="renderMathInElement(document.body);"></script>
+</body>
+</html>
